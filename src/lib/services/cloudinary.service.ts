@@ -1,5 +1,7 @@
-const CLOUDINARY_UPLOAD_PRESET = 'citybucketlist_drivers';
-const CLOUDINARY_CLOUD_NAME = 'citybucketlist';
+// Replace these with your Cloudinary credentials
+const CLOUDINARY_UPLOAD_PRESET = 'citybucketlist_drivers'; // The one you created above
+const CLOUDINARY_CLOUD_NAME = 'dv0fkgpua';   // From your dashboard
+const CLOUDINARY_API_KEY = '463943793553519';         // From your dashboard
 
 interface CloudinaryResponse {
   secure_url: string;
@@ -24,6 +26,7 @@ export const cloudinaryService = {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    formData.append('api_key', CLOUDINARY_API_KEY);
 
     try {
       const response = await fetch(
