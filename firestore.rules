@@ -1,0 +1,126 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isDriver(driverId) {
+      return isAuthenticated() && request.auth.uid == driverId;
+    }
+    
+    function isRider(riderId) {
+      return isAuthenticated() && request.auth.uid == riderId;
+    }
+    
+    function isRideParticipant(rideData) {
+      return isAuthenticated() && (
+        request.auth.uid == rideData.driverId || 
+        request.auth.uid == rideData.riderId
+      );
+    }
+
+    function isMessageParticipant(messageData) {
+      return isAuthenticated() && (
+        request.auth.uid == messageData.senderId || 
+        request.auth.uid == messageData.receiverId
+      );
+    }
+
+    // Messages collection rules
+    match /messages/{messageId} {
+      allow create: if isAuthenticated() && (
+        request.auth.uid == request.resource.data.senderId &&
+        exists(/databases/$(database)/documents/rides/$(request.resource.data.rideId))
+      );
+      
+      allow read, list: if isAuthenticated() && (
+        // Allow if user is a participant in the message
+        request.auth.uid == resource.data.senderId ||
+        request.auth.uid == resource.data.receiverId ||
+        
+        // Or if user is querying by rideId and is a participant in that ride
+        ('rideId' in resource.data && 
+          exists(/databases/$(database)/documents/rides/$(resource.data.rideId)) &&
+          (
+            get(/databases/$(database)/documents/rides/$(resource.data.rideId)).data.riderId == request.auth.uid ||
+            get(/databases/$(database)/documents/rides/$(resource.data.rideId)).data.driverId == request.auth.uid
+          )
+        )
+      );
+      
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.senderId ||
+        request.auth.uid == resource.data.receiverId
+      );
+      
+      allow delete: if false;
+    }
+
+    // Rides collection rules
+    match /rides/{rideId} {
+      allow create: if true;
+      allow read: if true;
+      // Allow listing rides with a limit to prevent excessive reads
+      allow list: if isAuthenticated() && (
+        // Allow drivers to list their own rides
+        (request.query.filters.size() > 0 && 
+         'driverId' in request.query.filters && 
+         request.query.filters.driverId == request.auth.uid) ||
+        // Allow riders to list their rides
+        (request.query.filters.size() > 0 && 
+         'riderId' in request.query.filters && 
+         request.query.filters.riderId == request.auth.uid)
+      ) && request.query.limit <= 100;
+      allow update: if isAuthenticated();
+      allow delete: if false;
+    }
+
+    // Drivers collection rules
+    match /drivers/{driverId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        isDriver(driverId) || 
+        (request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['isOnline', 'lastOnlineChange', 'status']))
+      );
+      allow delete: if false;
+
+      // Allow querying drivers by online status, city, and rating
+      allow list: if request.query.limit <= 50;
+    }
+
+    // Driver Status collection rules
+    match /driverStatus/{docId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && (
+        request.resource.data.driverId == request.auth.uid
+      );
+      allow delete: if false;
+      allow list: if isAuthenticated();
+    }
+
+    // Riders collection rules
+    match /riders/{riderId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && (
+        request.auth.uid == riderId || 
+        get(/databases/$(database)/documents/drivers/$(request.auth.uid)).data != null
+      );
+      allow update: if isAuthenticated() && (
+        isRider(riderId) || 
+        get(/databases/$(database)/documents/drivers/$(request.auth.uid)).data != null
+      );
+      allow delete: if false;
+    }
+
+    // QR Codes collection rules
+    match /qrCodes/{driverId} {
+      allow read: if isDriver(driverId);
+      allow create, update: if isDriver(driverId);
+      allow delete: if false;
+    }
+  }
+}

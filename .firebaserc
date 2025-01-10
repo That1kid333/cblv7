@@ -1,0 +1,20 @@
+{
+  "projects": {
+    "default": "city-bucket-list"
+  },
+  "targets": {
+    "city-bucket-list": {
+      "hosting": {
+        "production": [
+          "city-bucket-list"
+        ],
+        "staging": [
+          "city-bucket-list-staging"
+        ],
+        "development": [
+          "city-bucket-list-dev"
+        ]
+      }
+    }
+  }
+}

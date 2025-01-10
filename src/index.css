@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-black;
+}
+
+input:focus {
+  @apply outline-none ring-2 ring-[#F5A623];
+}
