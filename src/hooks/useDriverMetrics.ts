@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 interface DriverMetrics {
@@ -8,6 +8,8 @@ interface DriverMetrics {
   rating: number;
   todayRides: number;
   todayHours: number;
+  acceptanceRate: number;
+  responseTime: number;
 }
 
 interface RideData {
@@ -31,7 +33,9 @@ export function useDriverMetrics(driverId: string) {
     totalRides: 0,
     rating: 5.0,
     todayRides: 0,
-    todayHours: 0
+    todayHours: 0,
+    acceptanceRate: 0,
+    responseTime: 0
   });
 
   useEffect(() => {
@@ -70,15 +74,14 @@ export function useDriverMetrics(driverId: string) {
 
       // Calculate average rating
       const ratings = allRides.map(ride => ride.rating).filter(Boolean);
-      const averageRating = ratings.length > 0 
-        ? ratings.reduce((a, b) => a + b, 0) / ratings.length 
-        : 5.0;
+      const validRatings = ratings.filter(r => r !== undefined);
+      const finalRating = validRatings.length > 0 ? validRatings.reduce((a, b) => a + b, 0) / validRatings.length : 5.0;
 
       setMetrics(prev => ({
         ...prev,
         totalRides,
         todayRides,
-        rating: Number(averageRating.toFixed(1))
+        rating: Number(finalRating.toFixed(1))
       }));
     });
 

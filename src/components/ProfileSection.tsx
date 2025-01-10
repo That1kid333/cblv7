@@ -130,13 +130,13 @@ export function ProfileSection({ driver, onUpdate }: ProfileSectionProps) {
             {isEditing ? (
               <input
                 type="text"
-                value={profile.vehicle.plate}
-                onChange={(e) => handleVehicleUpdate('plate', e.target.value)}
+                value={profile.vehicle.licensePlate}
+                onChange={(e) => handleVehicleUpdate('licensePlate', e.target.value)}
                 placeholder="Vehicle Tag/License Plate"
                 className="bg-neutral-800 text-white px-2 py-1 rounded flex-1"
               />
             ) : (
-              <span>TAG# {profile.vehicle.plate || 'Not provided'}</span>
+              <span>TAG# {profile.vehicle.licensePlate || 'Not provided'}</span>
             )}
           </div>
         </div>

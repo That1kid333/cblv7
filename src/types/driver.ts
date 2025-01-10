@@ -71,10 +71,24 @@ export interface Driver {
     year: string;
     color: string;
     licensePlate: string;
+    insurance: {
+      provider: string;
+      policyNumber: string;
+      expirationDate: string;
+      documentUrl: string;
+    };
   };
   rating: number;
   experience: string;
   languages: string[];
+  totalRides: number;
+  metrics: {
+    hoursOnline: number;
+    totalRides: number;
+    rating: number;
+    todayRides: number;
+    todayHours: number;
+  };
   created_at: string;
   updated_at: string;
 }
@@ -94,11 +108,25 @@ export const initialDriver: Driver = {
     model: '',
     year: '',
     color: '',
-    licensePlate: ''
+    licensePlate: '',
+    insurance: {
+      provider: '',
+      policyNumber: '',
+      expirationDate: '',
+      documentUrl: ''
+    }
   },
   rating: 5.0,
   experience: '',
   languages: [],
+  totalRides: 0,
+  metrics: {
+    hoursOnline: 0,
+    totalRides: 0,
+    rating: 0,
+    todayRides: 0,
+    todayHours: 0
+  },
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString()
 };

@@ -39,7 +39,9 @@ class RideService {
 
       querySnapshot.forEach((doc) => {
         const driverData = doc.data();
-        console.log('Found driver:', driverData.name, 'Online:', driverData.isOnline);
+        console.log('Found driver:', driverData.name, 'Online:', driverData.isOnline, 'Tag Number:', driverData.tagNumber);
+        console.log('Tag Number:', driverData.tagNumber);
+        console.log('Driver Data:', driverData);
         drivers.push({ id: doc.id, ...driverData } as Driver);
       });
 

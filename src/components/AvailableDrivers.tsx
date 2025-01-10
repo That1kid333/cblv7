@@ -1,4 +1,3 @@
-import React from 'react';
 import { Driver } from '../types/driver';
 import { Car, Star, MapPin } from 'lucide-react';
 import { locations } from '../types/location';
@@ -52,7 +51,13 @@ export function AvailableDrivers({ drivers, onSelect }: AvailableDriversProps) {
                   </div>
                   <div className="flex items-center space-x-2 text-sm text-neutral-400">
                     <Car className="w-4 h-4" />
-                    <span>TAG# {driver.vehicle.plate}</span>
+                    <span>TAG# {driver.vehicle.licensePlate}</span>
+                  </div>
+                  <div className="text-sm text-neutral-400">
+                    License Plate: {driver.vehicle.licensePlate || 'Not provided'}
+                  </div>
+                  <div className="text-sm text-neutral-400">
+                    License Plate: {driver.vehicle.licensePlate || 'Not provided'}
                   </div>
                 </div>
               </div>

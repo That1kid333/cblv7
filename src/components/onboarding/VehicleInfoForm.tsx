@@ -70,8 +70,8 @@ export function VehicleInfoForm({ driver, onChange }: VehicleInfoFormProps) {
           <FormInput
             label="License Plate"
             type="text"
-            value={driver.vehicle.plate}
-            onChange={(e) => handleVehicleChange('plate', e.target.value)}
+            value={driver.vehicle.licensePlate}
+            onChange={(e) => handleVehicleChange('licensePlate', e.target.value)}
             required
           />
         </div>
