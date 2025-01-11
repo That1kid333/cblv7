@@ -1,5 +1,5 @@
-import React from 'react';
 import { LayoutDashboard, Car, CalendarRange, MessageCircle, Settings, LucideIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface DriverFooterNavProps {
   activeTab: number;
