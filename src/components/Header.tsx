@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, Bell } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { authService } from '../lib/services/auth.service';
-import { subscribeToNewMessages } from '../lib/services/messages.service';
 
 export function Header() {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(0);
   const currentUser = auth.currentUser;
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToMessages(currentUser?.uid, (messages) => {
+      const unreadCount = messages.filter(message => !message.read).length;
+      setUnreadMessages(unreadCount);
+    });
+    return () => unsubscribe();
+  }, [currentUser?.uid]);
 
   const handleLogout = async () => {
     try {
@@ -18,19 +25,6 @@ export function Header() {
     } catch (error) {
       console.error('Logout error:', error);
     }
-  };
-
-  useEffect(() => {
-    const unsubscribe = subscribeToNewMessages((newMessage) => {
-      setNotificationCount((prevCount) => prevCount + 1);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  const handleBellClick = () => {
-    setNotificationCount(0); // Reset count when notifications are viewed
-    navigate('/messages'); // Navigate to messages page
   };
 
   return (
@@ -71,12 +65,16 @@ export function Header() {
             </Link>
             
             {currentUser ? (
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 bg-[#C69249] text-white rounded-lg hover:bg-[#B58238] transition-colors"
-              >
-                Logout
-              </button>
+              <div className="relative">
+                <Link to="/messages">
+                  <span className="material-icons">notifications</span>
+                  {unreadMessages > 0 && (
+                    <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full text-xs px-1">
+                      {unreadMessages}
+                    </span>
+                  )}
+                </Link>
+              </div>
             ) : (
               <Link
                 to="/driver/login"
@@ -85,11 +83,15 @@ export function Header() {
                 Driver Login
               </Link>
             )}
+            {currentUser && (
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-[#C69249] text-white rounded-lg hover:bg-[#B58238] transition-colors"
+              >
+                Logout
+              </button>
+            )}
           </nav>
-          <div onClick={handleBellClick} style={{ cursor: 'pointer' }}>
-            <Bell />
-            {notificationCount > 0 && <span>{notificationCount}</span>}
-          </div>
         </div>
 
         <nav
@@ -113,6 +115,26 @@ export function Header() {
           </Link>
           
           {currentUser ? (
+            <div className="relative">
+              <Link to="/messages">
+                <span className="material-icons">notifications</span>
+                {unreadMessages > 0 && (
+                  <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full text-xs px-1">
+                    {unreadMessages}
+                  </span>
+                )}
+              </Link>
+            </div>
+          ) : (
+            <Link
+              to="/driver/login"
+              className="w-full px-4 py-2 bg-[#C69249] text-white rounded-lg hover:bg-[#B58238] transition-colors text-center"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Driver Login
+            </Link>
+          )}
+          {currentUser && (
             <button
               onClick={() => {
                 handleLogout();
@@ -122,14 +144,6 @@ export function Header() {
             >
               Logout
             </button>
-          ) : (
-            <Link
-              to="/driver/login"
-              className="w-full px-4 py-2 bg-[#C69249] text-white rounded-lg hover:bg-[#B58238] transition-colors text-center"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Driver Login
-            </Link>
           )}
         </nav>
       </div>

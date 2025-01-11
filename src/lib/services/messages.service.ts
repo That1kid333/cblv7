@@ -44,16 +44,5 @@ export const messagesService = {
     await updateDoc(doc(db, 'messages', messageId), {
       read: true
     });
-  },
-};
-
-export const subscribeToNewMessages = (callback: (newMessage: any) => void) => {
-  const unsubscribe = onSnapshot(collection(db, 'messages'), (snapshot) => {
-    snapshot.docChanges().forEach((change) => {
-      if (change.type === 'added') {
-        callback(change.doc.data());
-      }
-    });
-  });
-  return unsubscribe; // Return the unsubscribe function for cleanup
+  }
 };
