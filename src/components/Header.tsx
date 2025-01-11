@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, Bell } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { authService } from '../lib/services/auth.service';
+import { subscribeToNewMessages } from '../lib/services/messages.service';
 
 export function Header() {
   const navigate = useNavigate();

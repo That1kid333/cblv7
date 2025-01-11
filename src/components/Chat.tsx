@@ -63,8 +63,8 @@ export function Chat({ rideId, driverId }: ChatProps) {
         status: 'delivered', // Set initial status to delivered
       };
       await addDoc(collection(db, 'messages'), messageData);
-      setNewMessage('');
-      // Optionally, update the message status to read when the recipient opens the chat
+      setNewMessage(''); // Clear the input field
+      // Ensure no navigation occurs here
     }
   };
 
