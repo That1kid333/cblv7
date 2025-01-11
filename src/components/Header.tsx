@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { auth } from '../lib/firebase';
@@ -7,7 +7,6 @@ import { authService } from '../lib/services/auth.service';
 export function Header() {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [newMessagesCount, setNewMessagesCount] = useState(0);
   const currentUser = auth.currentUser;
 
   const handleLogout = async () => {
@@ -18,13 +17,6 @@ export function Header() {
       console.error('Logout error:', error);
     }
   };
-
-  useEffect(() => {
-    const unsubscribe = subscribeToNewMessages(rideId, (newMessage) => {
-      setNewMessagesCount(prevCount => prevCount + 1);
-    });
-    return () => unsubscribe();
-  }, [rideId]);
 
   return (
     <header className="bg-black py-4">
@@ -79,13 +71,6 @@ export function Header() {
               </Link>
             )}
           </nav>
-
-          <div className="notification-bell">
-            <span>{newMessagesCount > 0 ? newMessagesCount : ''}</span>
-            <Link to="/messages">
-              <i className="bell-icon" />
-            </Link>
-          </div>
         </div>
 
         <nav

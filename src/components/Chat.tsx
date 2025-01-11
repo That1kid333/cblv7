@@ -21,7 +21,6 @@ export function Chat({ rideId, driverId }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
-  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { rider } = useAuth();
 
@@ -90,13 +89,6 @@ export function Chat({ rideId, driverId }: ChatProps) {
     fetchMessages();
   }, [rideId]);
 
-  const handleTyping = () => {
-    setIsTyping(true);
-    // Emit typing event to other users
-    // Use a debounce to reset typing status after a delay
-    setTimeout(() => setIsTyping(false), 3000);
-  };
-
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !rideId || !rider?.id) return;
@@ -164,7 +156,6 @@ export function Chat({ rideId, driverId }: ChatProps) {
             </div>
           </div>
         ))}
-        {isTyping && <div className="text-sm opacity-75">User is typing...</div>}
         <div ref={messagesEndRef} />
       </div>
 
@@ -174,10 +165,7 @@ export function Chat({ rideId, driverId }: ChatProps) {
           <input
             type="text"
             value={newMessage}
-            onChange={(e) => {
-              setNewMessage(e.target.value);
-              handleTyping();
-            }}
+            onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type a message..."
             className="flex-1 bg-neutral-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#C69249] placeholder-neutral-400"
           />
