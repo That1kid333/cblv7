@@ -7,16 +7,8 @@ import { authService } from '../lib/services/auth.service';
 export function Header() {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [newMessagesCount, setNewMessagesCount] = useState(0);
   const currentUser = auth.currentUser;
-  const [unreadMessages, setUnreadMessages] = useState(0);
-
-  useEffect(() => {
-    const unsubscribe = subscribeToMessages(currentUser?.uid, (messages) => {
-      const unreadCount = messages.filter(message => !message.read).length;
-      setUnreadMessages(unreadCount);
-    });
-    return () => unsubscribe();
-  }, [currentUser?.uid]);
 
   const handleLogout = async () => {
     try {
@@ -26,6 +18,13 @@ export function Header() {
       console.error('Logout error:', error);
     }
   };
+
+  useEffect(() => {
+    const unsubscribe = subscribeToNewMessages(rideId, (newMessage) => {
+      setNewMessagesCount(prevCount => prevCount + 1);
+    });
+    return () => unsubscribe();
+  }, [rideId]);
 
   return (
     <header className="bg-black py-4">
@@ -65,16 +64,12 @@ export function Header() {
             </Link>
             
             {currentUser ? (
-              <div className="relative">
-                <Link to="/messages">
-                  <span className="material-icons">notifications</span>
-                  {unreadMessages > 0 && (
-                    <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full text-xs px-1">
-                      {unreadMessages}
-                    </span>
-                  )}
-                </Link>
-              </div>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-[#C69249] text-white rounded-lg hover:bg-[#B58238] transition-colors"
+              >
+                Logout
+              </button>
             ) : (
               <Link
                 to="/driver/login"
@@ -83,15 +78,14 @@ export function Header() {
                 Driver Login
               </Link>
             )}
-            {currentUser && (
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 bg-[#C69249] text-white rounded-lg hover:bg-[#B58238] transition-colors"
-              >
-                Logout
-              </button>
-            )}
           </nav>
+
+          <div className="notification-bell">
+            <span>{newMessagesCount > 0 ? newMessagesCount : ''}</span>
+            <Link to="/messages">
+              <i className="bell-icon" />
+            </Link>
+          </div>
         </div>
 
         <nav
@@ -115,26 +109,6 @@ export function Header() {
           </Link>
           
           {currentUser ? (
-            <div className="relative">
-              <Link to="/messages">
-                <span className="material-icons">notifications</span>
-                {unreadMessages > 0 && (
-                  <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full text-xs px-1">
-                    {unreadMessages}
-                  </span>
-                )}
-              </Link>
-            </div>
-          ) : (
-            <Link
-              to="/driver/login"
-              className="w-full px-4 py-2 bg-[#C69249] text-white rounded-lg hover:bg-[#B58238] transition-colors text-center"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Driver Login
-            </Link>
-          )}
-          {currentUser && (
             <button
               onClick={() => {
                 handleLogout();
@@ -144,6 +118,14 @@ export function Header() {
             >
               Logout
             </button>
+          ) : (
+            <Link
+              to="/driver/login"
+              className="w-full px-4 py-2 bg-[#C69249] text-white rounded-lg hover:bg-[#B58238] transition-colors text-center"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Driver Login
+            </Link>
           )}
         </nav>
       </div>
