@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Bell } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { authService } from '../lib/services/auth.service';
 
 export function Header() {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
   const currentUser = auth.currentUser;
 
   const handleLogout = async () => {
@@ -16,6 +17,19 @@ export function Header() {
     } catch (error) {
       console.error('Logout error:', error);
     }
+  };
+
+  useEffect(() => {
+    const unsubscribe = subscribeToNewMessages((newMessage) => {
+      setNotificationCount((prevCount) => prevCount + 1);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleBellClick = () => {
+    setNotificationCount(0); // Reset count when notifications are viewed
+    navigate('/messages'); // Navigate to messages page
   };
 
   return (
@@ -71,6 +85,10 @@ export function Header() {
               </Link>
             )}
           </nav>
+          <div onClick={handleBellClick} style={{ cursor: 'pointer' }}>
+            <Bell />
+            {notificationCount > 0 && <span>{notificationCount}</span>}
+          </div>
         </div>
 
         <nav

@@ -10,6 +10,7 @@ interface Message {
   senderId: string;
   timestamp: any;
   senderName?: string;
+  status?: string;
 }
 
 interface ChatProps {
@@ -21,6 +22,8 @@ export function Chat({ rideId, driverId }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { rider } = useAuth();
 
@@ -37,6 +40,31 @@ export function Chat({ rideId, driverId }: ChatProps) {
     } catch (error) {
       console.error('Error formatting timestamp:', error);
       return 'Invalid Date';
+    }
+  };
+
+  const handleTyping = () => {
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    setIsTyping(true);
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+    }, 300);
+    // Broadcast typing status to other users (e.g., via WebSocket or Firebase)
+  };
+
+  const handleSendMessage = async () => {
+    if (newMessage.trim()) {
+      const messageData = {
+        content: newMessage,
+        senderId: rider.id,
+        timestamp: serverTimestamp(),
+        status: 'delivered', // Set initial status to delivered
+      };
+      await addDoc(collection(db, 'messages'), messageData);
+      setNewMessage('');
+      // Optionally, update the message status to read when the recipient opens the chat
     }
   };
 
@@ -60,7 +88,8 @@ export function Chat({ rideId, driverId }: ChatProps) {
               content: data.content,
               senderId: data.senderId,
               timestamp: data.timestamp,
-              senderName: data.senderName
+              senderName: data.senderName,
+              status: data.status
             } as Message;
           });
           
@@ -88,29 +117,6 @@ export function Chat({ rideId, driverId }: ChatProps) {
 
     fetchMessages();
   }, [rideId]);
-
-  const sendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim() || !rideId || !rider?.id) return;
-
-    try {
-      const messagesRef = collection(db, 'messages');
-      await addDoc(messagesRef, {
-        content: newMessage.trim(),
-        senderId: rider.id,
-        rideId,
-        timestamp: serverTimestamp(),
-        senderName: rider.name,
-        participants: [rider.id, driverId]
-      });
-
-      setNewMessage('');
-      // Scroll to bottom immediately after sending
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    } catch (error) {
-      console.error('Error sending message:', error);
-    }
-  };
 
   if (loading) {
     return (
@@ -153,19 +159,22 @@ export function Chat({ rideId, driverId }: ChatProps) {
               <p className="text-xs opacity-75 mt-1">
                 {formatTimestamp(message.timestamp)}
               </p>
+              {message.status === 'read' && <span>✓</span>}
             </div>
           </div>
         ))}
+        {isTyping && <p className="text-xs opacity-75 mt-1">Someone is typing...</p>}
         <div ref={messagesEndRef} />
       </div>
 
       {/* Message Input */}
-      <form onSubmit={sendMessage} className="p-4 bg-neutral-800 border-t border-neutral-700">
+      <form onSubmit={(e) => handleSendMessage()} className="p-4 bg-neutral-800 border-t border-neutral-700">
         <div className="flex space-x-2">
           <input
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
+            onKeyUp={handleTyping}
             placeholder="Type a message..."
             className="flex-1 bg-neutral-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#C69249] placeholder-neutral-400"
           />
