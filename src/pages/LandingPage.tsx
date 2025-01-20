@@ -41,7 +41,7 @@ const LandingPage: React.FC = () => {
                 </a>
             </header>
             <div className="landing-page" style={{ backgroundColor: 'black', color: 'white' }}>
-                <h1>Welcome to Our Ride Sharing App</h1>
+                <h1>Welcome to our Private Drivers Association</h1>
                 <h2>Please select your role:</h2>
                 <div className="button-container">
                     <button onClick={handleDriverClick}>I am a Driver</button>
