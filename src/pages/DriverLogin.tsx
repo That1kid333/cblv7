@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { FormInput } from '../components/FormInput';
 import { authService } from '../lib/services/auth.service';
 import { loginSchema } from '../lib/utils/validation';
 import { Mail } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 function DriverLogin() {
   const navigate = useNavigate();
+  const { user, driver, loading } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -15,12 +17,17 @@ function DriverLogin() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    if (!loading && user && driver) {
+      navigate('/driver/portal');
+    }
+  }, [loading, user, driver, navigate]);
+
   const handleGoogleSignIn = async () => {
     try {
       setError('');
       setIsLoading(true);
       const driver = await authService.signInWithGoogle();
-      localStorage.setItem('currentDriver', JSON.stringify(driver));
       navigate('/driver/portal');
     } catch (error) {
       console.error('Google sign in error:', error);
@@ -38,7 +45,6 @@ function DriverLogin() {
     try {
       const validatedData = loginSchema.parse(formData);
       const driver = await authService.login(validatedData.email, validatedData.password);
-      localStorage.setItem('currentDriver', JSON.stringify(driver));
       navigate('/driver/portal');
     } catch (error) {
       console.error('Login error:', error);
@@ -50,9 +56,20 @@ function DriverLogin() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
     setError('');
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-[#C69249] text-xl">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">

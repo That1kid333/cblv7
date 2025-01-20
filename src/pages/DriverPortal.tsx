@@ -29,7 +29,7 @@ function DriverPortal() {
     const setupDriverListener = async () => {
       const user = await authService.getCurrentUser();
       if (!user) {
-        navigate('/login');
+        navigate('/driver/login');
         return;
       }
 
@@ -38,7 +38,7 @@ function DriverPortal() {
         if (doc.exists()) {
           setDriver({ id: doc.id, ...doc.data() } as Driver);
         } else {
-          navigate('/login');
+          navigate('/driver/login');
         }
       });
     };
@@ -63,7 +63,7 @@ function DriverPortal() {
 
   const handleSignOut = async () => {
     await authService.signOut();
-    navigate('/login');
+    navigate('/driver/login');
   };
 
   if (!driver) {

@@ -15,11 +15,12 @@ import DriverMessagesList from './pages/DriverMessagesList';
 import ProtectedRoute from './components/ProtectedRoute';
 import RiderProtectedRoute from './components/RiderProtectedRoute';
 import GuestRideConfirmation from './pages/GuestRideConfirmation';
+import LandingPage from './pages/LandingPage';
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<BookingPage />} />
+      <Route path="/" element={<LandingPage />} />
       <Route path="/thank-you" element={<ThankYouPage />} />
       <Route path="/guest/confirmation" element={<GuestRideConfirmation />} />
       <Route path="/driver/signup" element={<DriverSignup />} />
@@ -60,6 +61,8 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="/driver-portal" element={<DriverPortal />} />
+      <Route path="/rider-portal" element={<RiderPortal />} />
       <Route
         path="/rider/*"
         element={

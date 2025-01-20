@@ -12,8 +12,6 @@ function RiderSignup() {
     email: '',
     phone: '',
     password: '',
-    confirmPassword: '',
-    locationId: locations[0].id,
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,8 +28,6 @@ function RiderSignup() {
       if (!formData.phone.trim()) throw new Error('Phone number is required');
       if (!formData.password) throw new Error('Password is required');
       if (formData.password.length < 6) throw new Error('Password must be at least 6 characters');
-      if (formData.password !== formData.confirmPassword) throw new Error('Passwords do not match');
-      if (!formData.locationId) throw new Error('Please select your city');
 
       // Register rider
       await authService.registerRider({
@@ -39,28 +35,13 @@ function RiderSignup() {
         email: formData.email.trim(),
         password: formData.password,
         phone: formData.phone.trim(),
-        locationId: formData.locationId
       });
 
       // Navigate to rider portal
       navigate('/rider/portal');
     } catch (error) {
       console.error('Registration error:', error);
-      if (error instanceof Error) {
-        if (error.message.includes('auth/email-already-in-use')) {
-          setError('This email is already registered. Please sign in instead.');
-          // Clear password fields
-          setFormData(prev => ({
-            ...prev,
-            password: '',
-            confirmPassword: ''
-          }));
-          return;
-        }
-        setError(error.message);
-      } else {
-        setError('Failed to create account');
-      }
+      setError(error instanceof Error ? error.message : 'An error occurred');
     } finally {
       setIsSubmitting(false);
     }
@@ -72,6 +53,16 @@ function RiderSignup() {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await authService.signInWithGoogle();
+      navigate('/rider/portal');
+    } catch (error) {
+      console.error('Google sign in error:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred');
+    }
   };
 
   return (
@@ -116,37 +107,11 @@ function RiderSignup() {
               required
             />
             
-            <div>
-              <label className="block text-sm font-medium mb-2">City</label>
-              <select
-                name="locationId"
-                value={formData.locationId}
-                onChange={handleChange}
-                className="w-full px-4 py-2 bg-neutral-900 border border-neutral-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C69249]"
-                required
-              >
-                {locations.map(location => (
-                  <option key={location.id} value={location.id}>
-                    {location.name}, {location.region}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
             <FormInput
               label="Password"
               name="password"
               type="password"
               value={formData.password}
-              onChange={handleChange}
-              required
-            />
-            
-            <FormInput
-              label="Confirm Password"
-              name="confirmPassword"
-              type="password"
-              value={formData.confirmPassword}
               onChange={handleChange}
               required
             />
@@ -159,6 +124,10 @@ function RiderSignup() {
               {isSubmitting ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
+          
+          <button type="button" onClick={handleGoogleSignIn} className="w-full px-4 py-2 bg-[#C69249] text-white rounded-lg hover:bg-[#B58238] mt-4">
+            Sign Up with Google
+          </button>
           
           <p className="mt-6 text-center text-neutral-400">
             Already have an account?{' '}

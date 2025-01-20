@@ -1,13 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../lib/services/auth.service';
+import { useAuth } from '../hooks/useAuth';
 
 export default function RiderLogin() {
   const navigate = useNavigate();
+  const { user, rider, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!loading && user && rider) {
+      navigate('/rider/portal');
+    }
+  }, [loading, user, rider, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,19 +26,39 @@ export default function RiderLogin() {
       const user = await authService.signIn(email, password);
       const userDoc = await authService.getUserDoc(user.uid);
       
-      if (userDoc?.type !== 'rider') {
+      if (!userDoc) {
+        setError('User account not found');
         await authService.signOut();
+        setIsLoading(false);
+        return;
+      }
+
+      if (userDoc.type !== 'rider') {
         setError('This account is not registered as a rider. Please sign up as a rider first.');
+        await authService.signOut();
         setIsLoading(false);
         return;
       }
 
       navigate('/rider/portal');
     } catch (err) {
-      setError('Invalid email or password');
+      console.error('Login error:', err);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An error occurred during login');
+      }
       setIsLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-[#C69249] text-xl">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">

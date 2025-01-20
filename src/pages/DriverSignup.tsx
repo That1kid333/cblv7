@@ -47,7 +47,24 @@ const initialSignupForm: SignupForm = {
 };
 
 export default function DriverSignup() {
-  const [formData, setFormData] = useState<SignupForm>(initialSignupForm);
+  const [formData, setFormData] = useState<SignupForm>({
+    name: '',
+    email: '',
+    password: '',
+    phone: '',
+    driversLicense: {
+      number: '',
+      expirationDate: ''
+    },
+    vehicle: {
+      make: '',
+      model: '',
+      year: '',
+      color: '',
+      plate: ''
+    },
+    locationId: locations[0].id
+  });
   const [error, setError] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
@@ -224,116 +241,6 @@ export default function DriverSignup() {
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 bg-neutral-800 rounded-lg focus:ring-2 focus:ring-[#C69249]"
                 required
-              />
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Driver's License</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-1">
-                    License Number
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.driversLicense.number}
-                    onChange={(e) => handleNestedInputChange('driversLicense', 'number', e.target.value)}
-                    className="w-full px-3 py-2 bg-neutral-800 rounded-lg focus:ring-2 focus:ring-[#C69249]"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-1">
-                    Expiration Date
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.driversLicense.expirationDate}
-                    onChange={(e) => handleNestedInputChange('driversLicense', 'expirationDate', e.target.value)}
-                    className="w-full px-3 py-2 bg-neutral-800 rounded-lg focus:ring-2 focus:ring-[#C69249]"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Vehicle Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-1">
-                    Make
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.vehicle.make}
-                    onChange={(e) => handleNestedInputChange('vehicle', 'make', e.target.value)}
-                    className="w-full px-3 py-2 bg-neutral-800 rounded-lg focus:ring-2 focus:ring-[#C69249]"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-1">
-                    Model
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.vehicle.model}
-                    onChange={(e) => handleNestedInputChange('vehicle', 'model', e.target.value)}
-                    className="w-full px-3 py-2 bg-neutral-800 rounded-lg focus:ring-2 focus:ring-[#C69249]"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-1">
-                    Year
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.vehicle.year}
-                    onChange={(e) => handleNestedInputChange('vehicle', 'year', e.target.value)}
-                    className="w-full px-3 py-2 bg-neutral-800 rounded-lg focus:ring-2 focus:ring-[#C69249]"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-1">
-                    Color
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.vehicle.color}
-                    onChange={(e) => handleNestedInputChange('vehicle', 'color', e.target.value)}
-                    className="w-full px-3 py-2 bg-neutral-800 rounded-lg focus:ring-2 focus:ring-[#C69249]"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-1">
-                    License Plate
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.vehicle.plate}
-                    onChange={(e) => handleNestedInputChange('vehicle', 'plate', e.target.value)}
-                    className="w-full px-3 py-2 bg-neutral-800 rounded-lg focus:ring-2 focus:ring-[#C69249]"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="text-lg font-medium">Service Area</h3>
-              <LocationSelector
-                locations={locations}
-                selectedLocation={formData.locationId}
-                onLocationChange={handleLocationChange}
               />
             </div>
 

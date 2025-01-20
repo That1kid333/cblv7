@@ -1,0 +1,49 @@
+.landing-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+h2 {
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+}
+
+.button-container {
+    display: flex;
+    gap: 20px;
+}
+
+button {
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.main-logo {
+    width: 200px;
+    margin: 0 auto;
+}
+
+.seal-image {
+    width: 100px;
+    display: block;
+    margin: 20px auto;
+}

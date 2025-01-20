@@ -279,6 +279,27 @@ export const authService = {
     }
   },
 
+  async signIn(email: string, password: string): Promise<User> {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      return userCredential.user;
+    } catch (error) {
+      console.error('Sign in error:', error);
+      if (error instanceof Error) {
+        if (error.message.includes('auth/invalid-email')) {
+          throw new Error('Please enter a valid email address');
+        } else if (error.message.includes('auth/user-disabled')) {
+          throw new Error('This account has been disabled');
+        } else if (error.message.includes('auth/user-not-found')) {
+          throw new Error('No account found with this email');
+        } else if (error.message.includes('auth/wrong-password')) {
+          throw new Error('Incorrect password');
+        }
+      }
+      throw error;
+    }
+  },
+
   async signOut(): Promise<void> {
     try {
       await firebaseSignOut(auth);
@@ -391,7 +412,6 @@ export const authService = {
     email: string;
     password: string;
     phone: string;
-    locationId: string;
   }): Promise<void> {
     try {
       // Create auth user
@@ -428,7 +448,6 @@ export const authService = {
         email: riderData.email,
         phone: riderData.phone,
         photo: '',
-        locationId: riderData.locationId,
         rating: 5.0,
         totalRides: 0,
         referredBy: referralDriverId || null,
