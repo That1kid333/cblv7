@@ -1,4 +1,4 @@
-import { Clock, MapPin, Star, Car } from 'lucide-react';
+import { Clock, MapPin, Car, DollarSign } from 'lucide-react';
 import { Driver } from '../../types/driver';
 import { PhotoUpload } from '../PhotoUpload';
 import { locations } from '../../types/location';
@@ -37,11 +37,10 @@ export function Overview({ driver, onUpdate }: OverviewProps) {
           />
           <div>
             <h2 className="text-xl font-semibold">{driver.name}</h2>
-            <div className="flex items-center gap-2 text-neutral-400">
-              <Star className="w-4 h-4 fill-[#F5A623] text-[#F5A623]" />
-              <span>{metrics.rating.toFixed(1)} Rating</span>
-              <span>•</span>
-              <span>{metrics.totalRides} Total Rides</span>
+            <div className="flex flex-col gap-1">
+              <span>{metrics.totalRides} Rides</span>
+              <span>{metrics.hoursOnline} Hours Online</span>
+              <span>${metrics.totalEarnings} Earned</span>
             </div>
           </div>
         </div>
@@ -50,16 +49,13 @@ export function Overview({ driver, onUpdate }: OverviewProps) {
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Hours Online */}
-        <div className="bg-neutral-900 p-4 rounded-lg">
-          <div className="flex items-center gap-2 text-[#F5A623] mb-2">
-            <Clock className="w-5 h-5" />
+        <div className="bg-neutral-800 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
             <span className="font-medium">Hours Online</span>
+            <Clock className="text-[#C69249]" />
           </div>
           <div className="text-2xl font-bold">
-            {metrics.todayHours}h
-          </div>
-          <div className="text-sm text-neutral-400 mt-1">
-            Total: {metrics.hoursOnline}h
+            {metrics.hoursOnline}
           </div>
         </div>
 
@@ -74,28 +70,25 @@ export function Overview({ driver, onUpdate }: OverviewProps) {
           </div>
         </div>
 
-        {/* Rating */}
-        <div className="bg-neutral-900 p-4 rounded-lg">
-          <div className="flex items-center gap-2 text-blue-500 mb-2">
-            <Star className="w-5 h-5" />
-            <span className="font-medium">Rating</span>
+        {/* Total Rides */}
+        <div className="bg-neutral-800 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-medium">Total Rides</span>
+            <Car className="text-[#C69249]" />
           </div>
           <div className="text-2xl font-bold">
-            {metrics.rating.toFixed(1)}
+            {metrics.totalRides}
           </div>
         </div>
 
-        {/* Rides */}
-        <div className="bg-neutral-900 p-4 rounded-lg">
-          <div className="flex items-center gap-2 text-purple-500 mb-2">
-            <Car className="w-5 h-5" />
-            <span className="font-medium">Completed Rides</span>
+        {/* Total Earnings */}
+        <div className="bg-neutral-800 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-medium">Total Earnings</span>
+            <DollarSign className="text-[#C69249]" />
           </div>
           <div className="text-2xl font-bold">
-            {metrics.todayRides}
-          </div>
-          <div className="text-sm text-neutral-400 mt-1">
-            Total: {metrics.totalRides}
+            ${metrics.totalEarnings}
           </div>
         </div>
       </div>

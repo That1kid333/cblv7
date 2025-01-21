@@ -1,4 +1,4 @@
-import { collection, query, where, getDocs, orderBy, addDoc, serverTimestamp, QueryConstraint } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, serverTimestamp, QueryConstraint } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Driver } from '../../types/driver';
 
@@ -30,8 +30,8 @@ class RideService {
         conditions.push(where('serviceLocations', 'array-contains', locationId));
       }
 
-      // Create query with all conditions
-      const q = query(driversRef, ...conditions, orderBy('rating', 'desc'));
+      // Query drivers based on conditions
+      const q = query(driversRef, ...conditions);
 
       console.log('Executing drivers query...');
       const querySnapshot = await getDocs(q);

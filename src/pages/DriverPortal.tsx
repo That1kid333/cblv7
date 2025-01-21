@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DriverFooterNav } from '../components/DriverFooterNav';
 import { Overview } from '../components/dashboard/Overview';
+import { OnlineToggle } from '../components/OnlineToggle';
 import { RidesManagement } from '../components/dashboard/RidesManagement';
 import { ScheduleManager } from '../components/dashboard/ScheduleManager';
 import { DriverMessagesList } from './DriverMessagesList';
@@ -10,7 +11,6 @@ import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Driver } from '../types/driver';
 import { authService } from '../lib/services/auth.service';
-import { OnlineToggle } from '../components/dashboard/OnlineToggle';
 import { useNavigate, Link } from 'react-router-dom';
 
 interface TabItem {

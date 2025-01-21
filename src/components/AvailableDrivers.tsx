@@ -1,5 +1,5 @@
 import { Driver } from '../types/driver';
-import { Car, Star, MapPin } from 'lucide-react';
+import { Car, MapPin } from 'lucide-react';
 import { locations } from '../types/location';
 
 interface AvailableDriversProps {
@@ -36,11 +36,10 @@ export function AvailableDrivers({ drivers, onSelect }: AvailableDriversProps) {
                   </div>
                 )}
                 <div>
-                  <h4 className="font-medium">{driver.name}</h4>
-                  <div className="flex items-center space-x-2 text-sm text-neutral-400">
-                    <Car className="w-4 h-4" />
-                    <span>
-                      {driver.vehicle.make} {driver.vehicle.model} ({driver.vehicle.color})
+                  <div className="flex flex-col">
+                    <span className="font-medium">{driver.name}</span>
+                    <span className="text-sm text-gray-400">
+                      {driver.vehicle.make} {driver.vehicle.model}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2 text-sm text-neutral-400">
@@ -62,10 +61,6 @@ export function AvailableDrivers({ drivers, onSelect }: AvailableDriversProps) {
                 </div>
               </div>
               <div className="text-right">
-                <div className="flex items-center space-x-1">
-                  <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                  <span>{driver.rating.toFixed(1)}</span>
-                </div>
                 <div className="text-sm text-neutral-400">
                   {driver.totalRides} rides
                 </div>

@@ -235,7 +235,6 @@ export const authService = {
           },
           isOnline: false,
           lastOnlineChange: now,
-          rating: 5.0,
           totalRides: 0,
           metrics: {
             totalEarnings: 0,

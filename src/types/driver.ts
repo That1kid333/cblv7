@@ -32,7 +32,6 @@ export const driverSchema = z.object({
   vehicle: vehicleSchema,
   isOnline: z.boolean(),
   lastOnlineChange: z.string(),
-  rating: z.number().min(0).max(5),
   totalRides: z.number().default(0),
   metrics: z.object({
     totalEarnings: z.number().default(0),
@@ -78,14 +77,12 @@ export interface Driver {
       documentUrl: string;
     };
   };
-  rating: number;
   experience: string;
   languages: string[];
   totalRides: number;
   metrics: {
     hoursOnline: number;
     totalRides: number;
-    rating: number;
     todayRides: number;
     todayHours: number;
   };
@@ -116,14 +113,12 @@ export const initialDriver: Driver = {
       documentUrl: ''
     }
   },
-  rating: 5.0,
   experience: '',
   languages: [],
   totalRides: 0,
   metrics: {
     hoursOnline: 0,
     totalRides: 0,
-    rating: 0,
     todayRides: 0,
     todayHours: 0
   },
