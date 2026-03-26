@@ -12,7 +12,12 @@ export const riderSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
   preferredLocation: z.string().optional(),
-  currentCity: z.enum(SUPPORTED_CITIES).optional()
+  currentCity: z.enum(SUPPORTED_CITIES).optional(),
+  notifications: z.object({
+    rides: z.boolean().default(true),
+    messages: z.boolean().default(true),
+    marketing: z.boolean().default(false)
+  }).optional()
 });
 
 export type Rider = z.infer<typeof riderSchema>;
@@ -28,5 +33,6 @@ export const initialRider: Rider = {
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
   currentCity: undefined,
-  preferredLocation: undefined
+  preferredLocation: undefined,
+  notifications: undefined
 };

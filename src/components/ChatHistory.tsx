@@ -32,6 +32,12 @@ interface Driver {
   isOnline: boolean;
 }
 
+interface Rider {
+  id: string;
+  name: string;
+  photo?: string;
+}
+
 export function ChatHistory() {
   const [chatThreads, setChatThreads] = useState<ChatThread[]>([]);
   const [onlineDrivers, setOnlineDrivers] = useState<Driver[]>([]);
@@ -75,7 +81,7 @@ export function ChatHistory() {
         const rides = ridesSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
-        }));
+        } as { id: string; driverId: string; status: string }));
 
         // Create a map of driver IDs to ride IDs
         const driverRideMap = new Map(
@@ -100,7 +106,7 @@ export function ChatHistory() {
         const messages = querySnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
-        }));
+        } as Message));
 
         // Group messages by driver and create chat threads
         const threads = new Map<string, ChatThread>();
@@ -117,11 +123,11 @@ export function ChatHistory() {
               const driverSnap = await getDoc(driverDocRef);
               
               if (driverSnap.exists()) {
-                const driverData = driverSnap.data();
+                const driverData = driverSnap.data() as Driver;
                 threads.set(driverId, {
                   driverId,
-                  driverName: driverData?.name || 'Unknown Driver',
-                  driverPhoto: driverData?.photo || '',
+                  driverName: driverData.name || 'Unknown Driver',
+                  driverPhoto: driverData.photo || '',
                   lastMessage: message.text,
                   lastMessageTime: message.timestamp,
                   unreadCount: message.senderId !== currentUser.uid && !message.read ? 1 : 0,
@@ -173,7 +179,7 @@ export function ChatHistory() {
         if (senderId === currentUser.uid) {
           const userDoc = await getDoc(doc(db, 'riders', currentUser.uid));
           if (userDoc.exists()) {
-            const userData = userDoc.data();
+            const userData = userDoc.data() as Rider;
             senderName = userData.name || 'You';
             senderPhoto = userData.photo || '';
           } else {
@@ -182,9 +188,9 @@ export function ChatHistory() {
         } else {
           const driverDoc = await getDoc(doc(db, 'drivers', senderId));
           if (driverDoc.exists()) {
-            const driverData = driverDoc.data();
+            const driverData = driverDoc.data() as Driver;
             senderName = driverData.name;
-            senderPhoto = driverData.photo;
+            senderPhoto = driverData.photo || '';
           }
         }
         

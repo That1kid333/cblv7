@@ -3,20 +3,18 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 interface DriverMetrics {
-  hoursOnline: number;
-  totalRides: number;
-  rating: number;
-  todayRides: number;
-  todayHours: number;
+  totalEarnings: number;
   acceptanceRate: number;
   responseTime: number;
+  hoursOnline: number;
+  todayRides: number;
+  totalRides: number;
 }
 
 interface RideData {
   id: string;
   status: string;
   created_at: string;
-  rating?: number;
   driverId: string;
 }
 
@@ -27,16 +25,17 @@ interface DriverStatusData {
   lastOnlineChange: string;
 }
 
+const defaultMetrics: DriverMetrics = {
+  totalEarnings: 0,
+  acceptanceRate: 100,
+  responseTime: 0,
+  hoursOnline: 0,
+  todayRides: 0,
+  totalRides: 0,
+};
+
 export function useDriverMetrics(driverId: string) {
-  const [metrics, setMetrics] = useState<DriverMetrics>({
-    hoursOnline: 0,
-    totalRides: 0,
-    rating: 5.0,
-    todayRides: 0,
-    todayHours: 0,
-    acceptanceRate: 0,
-    responseTime: 0
-  });
+  const [metrics, setMetrics] = useState(defaultMetrics);
 
   useEffect(() => {
     if (!driverId) return;
@@ -72,16 +71,10 @@ export function useDriverMetrics(driverId: string) {
         new Date(ride.created_at) >= today
       ).length;
 
-      // Calculate average rating
-      const ratings = allRides.map(ride => ride.rating).filter(Boolean);
-      const validRatings = ratings.filter(r => r !== undefined);
-      const finalRating = validRatings.length > 0 ? validRatings.reduce((a, b) => a + b, 0) / validRatings.length : 5.0;
-
       setMetrics(prev => ({
         ...prev,
         totalRides,
         todayRides,
-        rating: Number(finalRating.toFixed(1))
       }));
     });
 

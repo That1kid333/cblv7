@@ -5,6 +5,10 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
+  sendPasswordResetEmail,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
   User,
   getAuth
 } from 'firebase/auth';
@@ -12,7 +16,8 @@ import {
   doc, 
   setDoc, 
   getDoc, 
-  updateDoc 
+  updateDoc,
+  serverTimestamp
 } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { Driver } from '../../types/driver';
@@ -49,60 +54,82 @@ export const authService = {
           photo: userCredential.user.photoURL || '',
           driversLicense: {
             number: '',
-            expirationDate: '',
-            documentUrl: ''
+            expirationDate: ''
           },
           vehicle: {
             make: '',
             model: '',
-            year: new Date().getFullYear().toString(),
+            year: '',
             color: '',
-            plate: '',
+            licensePlate: '',
+            registration: {
+              number: '',
+              expirationDate: '',
+              documentUrl: ''
+            },
             insurance: {
               provider: '',
               policyNumber: '',
               expirationDate: '',
               documentUrl: ''
-            },
-            registration: {
-              expirationDate: '',
-              documentUrl: ''
             }
           },
-          isOnline: true,
-          lastOnlineChange: now,
-          rating: 5.0,
-          totalRides: 0,
           metrics: {
-            totalEarnings: 0,
-            acceptanceRate: 100,
-            responseTime: 0,
             hoursOnline: 0,
-            todayRides: 0
+            totalRides: 0,
+            todayRides: 0,
+            todayHours: 0,
+            totalEarnings: 0
           },
-          backgroundCheck: {
-            status: 'pending',
-            submissionDate: now,
-            documentUrl: ''
-          },
-          baseRate: 25,
-          airportRate: 35,
-          longDistanceRate: 2,
+          status: 'pending',
           serviceLocations: [],
-          status: 'active',
+          type: 'driver',
           created_at: now,
-          updated_at: now,
-          languages: [],
-          experience: '0-1 years'
+          updated_at: now
         };
-        
+
         await setDoc(doc(db, 'drivers', userCredential.user.uid), newDriver);
         return newDriver;
       }
 
       return { id: driverDoc.id, ...driverDoc.data() } as Driver;
     } catch (error) {
-      console.error('Google sign in error:', error);
+      console.error('Error signing in with Google:', error);
+      throw error;
+    }
+  },
+
+  async login(email: string, password: string, rememberMe: boolean = false): Promise<Driver> {
+    try {
+      // Set persistence based on remember me preference
+      await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
+      
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const driverDoc = await getDoc(doc(db, 'drivers', userCredential.user.uid));
+      
+      if (!driverDoc.exists()) {
+        throw new Error('Driver account not found');
+      }
+
+      const driver = { id: driverDoc.id, ...driverDoc.data() } as Driver;
+      
+      // Update last login timestamp
+      await updateDoc(doc(db, 'drivers', userCredential.user.uid), {
+        last_login: serverTimestamp()
+      });
+
+      return driver;
+    } catch (error) {
+      console.error('Error logging in:', error);
+      throw error;
+    }
+  },
+
+  async sendPasswordResetEmail(email: string): Promise<void> {
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } catch (error) {
+      console.error('Error sending password reset email:', error);
       throw error;
     }
   },
@@ -121,180 +148,53 @@ export const authService = {
       model: string;
       year: string;
       color: string;
-      plate: string;
+      licensePlate: string;
+      insurance: {
+        provider: string;
+        policyNumber: string;
+        expirationDate: string;
+        documentUrl: string;
+      };
     };
-    locationId: string;
+    serviceLocations: string[];
   }): Promise<Driver> {
     try {
-      // Create auth user
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        driverData.email,
-        driverData.password
-      );
-
+      const userCredential = await createUserWithEmailAndPassword(auth, driverData.email, driverData.password);
       const now = new Date().toISOString();
 
-      // Create driver document with complete vehicle information
-      const driverDoc: Driver = {
+      const newDriver: Driver = {
         id: userCredential.user.uid,
         name: driverData.name,
         email: driverData.email,
         phone: driverData.phone,
-        photo: '',
-        driversLicense: {
-          ...driverData.driversLicense,
-          documentUrl: ''
-        },
+        photo: userCredential.user.photoURL || '',
+        driversLicense: driverData.driversLicense,
         vehicle: {
-          make: driverData.vehicle.make,
-          model: driverData.vehicle.model,
-          year: driverData.vehicle.year,
-          color: driverData.vehicle.color,
-          plate: driverData.vehicle.plate,
-          insurance: {
-            provider: '',
-            policyNumber: '',
-            expirationDate: '',
-            documentUrl: ''
-          },
+          ...driverData.vehicle,
           registration: {
+            number: '',
             expirationDate: '',
             documentUrl: ''
           }
         },
-        isOnline: true,
-        lastOnlineChange: now,
-        rating: 5.0,
-        totalRides: 0,
         metrics: {
-          totalEarnings: 0,
-          acceptanceRate: 100,
-          responseTime: 0,
           hoursOnline: 0,
-          todayRides: 0
+          totalRides: 0,
+          todayRides: 0,
+          todayHours: 0,
+          totalEarnings: 0
         },
-        backgroundCheck: {
-          status: 'pending',
-          submissionDate: now,
-          documentUrl: ''
-        },
-        baseRate: 25, // Set a default base rate
-        airportRate: 35, // Set a default airport rate
-        longDistanceRate: 2, // Set a default per-mile rate for long distance
-        serviceLocations: [driverData.locationId],
-        status: 'active',
+        status: 'pending',
+        serviceLocations: driverData.serviceLocations,
+        type: 'driver',
         created_at: now,
-        updated_at: now,
-        languages: [], // Initialize empty languages array
-        experience: '0-1 years' // Set default experience
+        updated_at: now
       };
 
-      // Save driver document
-      await setDoc(doc(db, 'drivers', driverDoc.id), driverDoc);
-
-      return driverDoc;
+      await setDoc(doc(db, 'drivers', userCredential.user.uid), newDriver);
+      return newDriver;
     } catch (error) {
       console.error('Error registering driver:', error);
-      throw error;
-    }
-  },
-
-  async login(email: string, password: string): Promise<Driver> {
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const driverDoc = await getDoc(doc(db, 'drivers', userCredential.user.uid));
-      
-      if (!driverDoc.exists()) {
-        // Create a basic driver document if it doesn't exist
-        const now = new Date().toISOString();
-        const newDriver: Driver = {
-          id: userCredential.user.uid,
-          name: userCredential.user.displayName || '',
-          email: userCredential.user.email || '',
-          phone: userCredential.user.phoneNumber || '',
-          photo: userCredential.user.photoURL || '',
-          driversLicense: {
-            number: '',
-            expirationDate: '',
-          },
-          vehicle: {
-            make: '',
-            model: '',
-            year: '2020',
-            color: '',
-            plate: '',
-            insurance: {
-              provider: '',
-              policyNumber: '',
-              expirationDate: '',
-            },
-            registration: {
-              expirationDate: '',
-            }
-          },
-          isOnline: false,
-          lastOnlineChange: now,
-          totalRides: 0,
-          metrics: {
-            totalEarnings: 0,
-            acceptanceRate: 100,
-            responseTime: 0,
-            hoursOnline: 0,
-            todayRides: 0
-          },
-          backgroundCheck: {
-            status: 'pending',
-            submissionDate: now,
-          },
-          baseRate: 0,
-          airportRate: 0,
-          longDistanceRate: 0,
-          serviceLocations: [],
-          status: 'inactive',
-          created_at: now,
-          updated_at: now
-        };
-        
-        await setDoc(doc(db, 'drivers', userCredential.user.uid), newDriver);
-        return newDriver;
-      }
-      
-      return { id: driverDoc.id, ...driverDoc.data() } as Driver;
-    } catch (error) {
-      console.error('Login error:', error);
-      if (error instanceof Error) {
-        if (error.message.includes('auth/invalid-email')) {
-          throw new Error('Please enter a valid email address');
-        } else if (error.message.includes('auth/user-disabled')) {
-          throw new Error('This account has been disabled');
-        } else if (error.message.includes('auth/user-not-found')) {
-          throw new Error('No account found with this email');
-        } else if (error.message.includes('auth/wrong-password')) {
-          throw new Error('Incorrect password');
-        }
-      }
-      throw error;
-    }
-  },
-
-  async signIn(email: string, password: string): Promise<User> {
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      return userCredential.user;
-    } catch (error) {
-      console.error('Sign in error:', error);
-      if (error instanceof Error) {
-        if (error.message.includes('auth/invalid-email')) {
-          throw new Error('Please enter a valid email address');
-        } else if (error.message.includes('auth/user-disabled')) {
-          throw new Error('This account has been disabled');
-        } else if (error.message.includes('auth/user-not-found')) {
-          throw new Error('No account found with this email');
-        } else if (error.message.includes('auth/wrong-password')) {
-          throw new Error('Incorrect password');
-        }
-      }
       throw error;
     }
   },
@@ -483,7 +383,30 @@ export const authService = {
     }
   },
 
+  async signIn(email: string, password: string): Promise<User> {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      return userCredential.user;
+    } catch (error) {
+      console.error('Sign in error:', error);
+      if (error instanceof Error) {
+        if (error.message.includes('auth/invalid-email')) {
+          throw new Error('Please enter a valid email address');
+        } else if (error.message.includes('auth/user-disabled')) {
+          throw new Error('This account has been disabled');
+        } else if (error.message.includes('auth/user-not-found')) {
+          throw new Error('No account found with this email');
+        } else if (error.message.includes('auth/wrong-password')) {
+          throw new Error('Incorrect password');
+        }
+      }
+      throw error;
+    }
+  },
+
   onAuthStateChanged(callback: (user: User | null) => void) {
     return onAuthStateChanged(auth, callback);
   }
 };
+
+export const signInWithGoogle = authService.signInWithGoogle;

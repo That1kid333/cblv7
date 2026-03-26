@@ -1,74 +1,57 @@
 import { Driver } from '../types/driver';
-import { Car, MapPin } from 'lucide-react';
-import { locations } from '../types/location';
+import { Car } from 'lucide-react';
 
 interface AvailableDriversProps {
   drivers: Driver[];
-  onSelect: (driver: Driver) => void;
+  onSelectDriver: (driver: Driver) => void;
+  selectedDriver?: Driver;
 }
 
-export function AvailableDrivers({ drivers, onSelect }: AvailableDriversProps) {
+export function AvailableDrivers({
+  drivers,
+  onSelectDriver,
+  selectedDriver,
+}: AvailableDriversProps) {
   return (
     <div className="space-y-4">
-      <h3 className="text-xl font-semibold mb-4">Available Drivers</h3>
-      {drivers.length === 0 ? (
-        <p className="text-neutral-400">No drivers available in your area</p>
-      ) : (
-        drivers.map((driver) => (
-          <div
+      <h3 className="text-lg font-semibold">Available Drivers</h3>
+      <div className="space-y-2">
+        {drivers.map((driver) => (
+          <button
             key={driver.id}
-            className="bg-neutral-800 rounded-lg p-4 hover:bg-neutral-700 cursor-pointer transition-colors"
-            onClick={() => onSelect(driver)}
+            onClick={() => onSelectDriver(driver)}
+            className={`w-full p-4 rounded-lg flex items-center justify-between ${
+              selectedDriver?.id === driver.id
+                ? 'bg-blue-500 text-white'
+                : 'bg-neutral-800 hover:bg-neutral-700'
+            }`}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                {driver.photo ? (
+            <div className="flex items-center gap-4">
+              {driver.photo && (
+                <div className="w-12 h-12 rounded-full overflow-hidden">
+                  <span className="sr-only">Driver photo</span>
                   <img
                     src={driver.photo}
-                    alt={driver.name}
-                    className="w-12 h-12 rounded-full object-cover"
+                    alt=""
+                    className="w-full h-full object-cover"
                   />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-neutral-600 flex items-center justify-center">
-                    <span className="text-xl text-white">
-                      {driver.name.charAt(0)}
-                    </span>
-                  </div>
-                )}
-                <div>
-                  <div className="flex flex-col">
-                    <span className="font-medium">{driver.name}</span>
-                    <span className="text-sm text-gray-400">
-                      {driver.vehicle.make} {driver.vehicle.model}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm text-neutral-400">
-                    <MapPin className="w-4 h-4" />
-                    <span>
-                      {locations.find(loc => loc.id === driver.serviceLocations[0])?.name}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm text-neutral-400">
-                    <Car className="w-4 h-4" />
-                    <span>TAG# {driver.vehicle.licensePlate}</span>
-                  </div>
-                  <div className="text-sm text-neutral-400">
-                    License Plate: {driver.vehicle.licensePlate || 'Not provided'}
-                  </div>
-                  <div className="text-sm text-neutral-400">
-                    License Plate: {driver.vehicle.licensePlate || 'Not provided'}
-                  </div>
                 </div>
-              </div>
-              <div className="text-right">
-                <div className="text-sm text-neutral-400">
-                  {driver.totalRides} rides
-                </div>
+              )}
+              <div className="flex flex-col">
+                <span className="font-medium">{driver.name}</span>
+                <span className="text-sm text-gray-500">
+                  {driver.vehicle.make} {driver.vehicle.model}
+                </span>
               </div>
             </div>
-          </div>
-        ))
-      )}
+            <div className="text-right">
+              <div className="text-sm text-neutral-400">
+                {driver.totalRides} rides
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

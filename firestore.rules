@@ -23,8 +23,7 @@ service cloud.firestore {
 
     function isMessageParticipant(messageData) {
       return isAuthenticated() && (
-        request.auth.uid == messageData.senderId || 
-        request.auth.uid == messageData.receiverId
+        request.auth.uid in messageData.participants
       );
     }
 
@@ -37,8 +36,7 @@ service cloud.firestore {
       
       allow read, list: if isAuthenticated() && (
         // Allow if user is a participant in the message
-        request.auth.uid == resource.data.senderId ||
-        request.auth.uid == resource.data.receiverId ||
+        request.auth.uid in resource.data.participants ||
         
         // Or if user is querying by rideId and is a participant in that ride
         ('rideId' in resource.data && 
@@ -50,10 +48,7 @@ service cloud.firestore {
         )
       );
       
-      allow update: if isAuthenticated() && (
-        request.auth.uid == resource.data.senderId ||
-        request.auth.uid == resource.data.receiverId
-      );
+      allow update: if isAuthenticated() && request.auth.uid in resource.data.participants;
       
       allow delete: if false;
     }

@@ -45,10 +45,10 @@ export function ProfileSection({ driver, onUpdate }: ProfileSectionProps) {
           />
           <div>
             <h2 className="text-2xl font-semibold">{profile.name}</h2>
-            <div className="flex items-center space-x-1 text-neutral-400">
-              <span className="text-sm">{profile.rating.toFixed(1)} Rating</span>
-              <span>•</span>
+            <div className="flex items-center gap-2">
               <span className="text-sm">{profile.totalRides} Rides</span>
+              <span className="text-neutral-400">•</span>
+              <span className="text-sm">{profile.experience}</span>
             </div>
           </div>
         </div>
@@ -142,22 +142,14 @@ export function ProfileSection({ driver, onUpdate }: ProfileSectionProps) {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-neutral-800 p-4 rounded-lg">
-            <div className="text-sm text-neutral-400">Rating</div>
-            <div className="text-xl font-semibold">{profile.rating.toFixed(1)}</div>
-          </div>
-          <div className="bg-neutral-800 p-4 rounded-lg">
+        <div className="flex gap-8">
+          <div>
             <div className="text-sm text-neutral-400">Total Rides</div>
             <div className="text-xl font-semibold">{profile.totalRides}</div>
           </div>
-          <div className="bg-neutral-800 p-4 rounded-lg">
-            <div className="text-sm text-neutral-400">Acceptance Rate</div>
-            <div className="text-xl font-semibold">{profile.metrics.acceptanceRate}%</div>
-          </div>
-          <div className="bg-neutral-800 p-4 rounded-lg">
-            <div className="text-sm text-neutral-400">Response Time</div>
-            <div className="text-xl font-semibold">{profile.metrics.responseTime}s</div>
+          <div>
+            <div className="text-sm text-neutral-400">Experience</div>
+            <div className="text-xl font-semibold">{profile.experience}</div>
           </div>
         </div>
 

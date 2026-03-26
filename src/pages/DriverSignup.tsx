@@ -1,12 +1,44 @@
 import React, { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { Header } from '../components/Header';
-import { FormInput } from '../components/FormInput';
 import { auth, db } from '../lib/firebase';
 import { useNavigate } from 'react-router-dom';
-import { LocationSelector } from '../components/LocationSelector';
-import { locations } from '../types/location';
+import { FaInstagram } from 'react-icons/fa';
+import { RxHamburgerMenu } from 'react-icons/rx';
+import { FaShoppingCart } from 'react-icons/fa';
+import {
+  PageContainer,
+  Header,
+  Logo,
+  Title,
+  Subtitle,
+  Input,
+  Button,
+  Form,
+  MembershipSeal,
+  SmallText,
+  Link,
+  IconButton
+} from '../styles/shared';
+import styled from 'styled-components';
+
+const SubscriptionText = styled.div`
+  text-align: center;
+  margin: 20px 0;
+  
+  .price {
+    color: ${props => props.theme.colors?.primary || '#F4A340'};
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 10px 0;
+  }
+  
+  .description {
+    font-size: 0.9rem;
+    color: #999;
+    line-height: 1.4;
+  }
+`;
 
 interface SignupForm {
   name: string;
@@ -43,33 +75,16 @@ const initialSignupForm: SignupForm = {
     color: '',
     plate: ''
   },
-  locationId: locations[0].id
+  locationId: ''
 };
 
-export default function DriverSignup() {
-  const [formData, setFormData] = useState<SignupForm>({
-    name: '',
-    email: '',
-    password: '',
-    phone: '',
-    driversLicense: {
-      number: '',
-      expirationDate: ''
-    },
-    vehicle: {
-      make: '',
-      model: '',
-      year: '',
-      color: '',
-      plate: ''
-    },
-    locationId: locations[0].id
-  });
+const DriverSignup: React.FC = () => {
+  const [formData, setFormData] = useState<SignupForm>(initialSignupForm);
   const [error, setError] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
@@ -147,7 +162,7 @@ export default function DriverSignup() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -174,86 +189,74 @@ export default function DriverSignup() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <Header />
-      
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8">Driver Sign Up</h1>
-          
-          {error && (
-            <div className="bg-red-900/50 border border-red-700 text-red-200 px-4 py-2 rounded-lg mb-6">
-              {error}
-            </div>
-          )}
+    <PageContainer>
+      <Header>
+        <IconButton onClick={() => window.open('https://instagram.com', '_blank')}>
+          <FaInstagram />
+        </IconButton>
+        <Logo>CITYBUCKETLIST.COM</Logo>
+        <IconButton>
+          <RxHamburgerMenu />
+        </IconButton>
+      </Header>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-neutral-300 mb-1">
-                Full Name
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 bg-neutral-800 rounded-lg focus:ring-2 focus:ring-[#C69249]"
-                required
-              />
-            </div>
+      <Title>DRIVER</Title>
+      <Subtitle>SIGNUP</Subtitle>
 
-            <div>
-              <label className="block text-sm font-medium text-neutral-300 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 bg-neutral-800 rounded-lg focus:ring-2 focus:ring-[#C69249]"
-                required
-              />
-            </div>
+      <Form onSubmit={handleSubmit}>
+        <Input
+          type="text"
+          name="name"
+          placeholder="Name"
+          value={formData.name}
+          onChange={handleChange}
+          required
+        />
+        <Input
+          type="tel"
+          name="phone"
+          placeholder="Phone Number"
+          value={formData.phone}
+          onChange={handleChange}
+          required
+        />
+        <Input
+          type="email"
+          name="email"
+          placeholder="E-Mail"
+          value={formData.email}
+          onChange={handleChange}
+          required
+        />
+        <Input
+          type="password"
+          name="password"
+          placeholder="Set Password"
+          value={formData.password}
+          onChange={handleChange}
+          required
+        />
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Creating Account...' : 'Create Account'}
+        </Button>
+      </Form>
 
-            <div>
-              <label className="block text-sm font-medium text-neutral-300 mb-1">
-                Password
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 bg-neutral-800 rounded-lg focus:ring-2 focus:ring-[#C69249]"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-neutral-300 mb-1">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 bg-neutral-800 rounded-lg focus:ring-2 focus:ring-[#C69249]"
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3 bg-[#C69249] text-white rounded-lg hover:bg-[#B58238] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? 'Creating Account...' : 'Create Account'}
-            </button>
-          </form>
+      <SubscriptionText>
+        <div className="price">$19.99 Monthly Subscription Fee</div>
+        <div className="description">
+          First Month is free and every month following will be billed
+          accordingly. You can cancel at any time. This fee includes the digital
+          driver packet w/badges & QR-Codes along with full access to the app.
         </div>
-      </main>
-    </div>
+      </SubscriptionText>
+
+      <MembershipSeal 
+        src="/membership-seal.png" 
+        alt="PMA Membership Seal" 
+        style={{ marginTop: 'auto' }}
+      />
+    </PageContainer>
   );
-}
+};
+
+export default DriverSignup;

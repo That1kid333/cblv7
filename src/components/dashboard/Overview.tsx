@@ -1,4 +1,4 @@
-import { Clock, MapPin, Car, DollarSign } from 'lucide-react';
+import { Clock, MapPin, Car } from 'lucide-react';
 import { Driver } from '../../types/driver';
 import { PhotoUpload } from '../PhotoUpload';
 import { locations } from '../../types/location';
@@ -25,6 +25,20 @@ export function Overview({ driver, onUpdate }: OverviewProps) {
     return locationNames.join(', ');
   };
 
+  const getVehicleInfo = () => {
+    const vehicle = driver.vehicle || {};
+    return {
+      make: vehicle.make || 'Not Set',
+      model: vehicle.model || 'Not Set',
+      year: vehicle.year || 'Not Set',
+      color: vehicle.color || 'Not Set',
+      licensePlate: vehicle.licensePlate || 'Not Set',
+      insurance: vehicle.insurance || {}
+    };
+  };
+
+  const vehicleInfo = getVehicleInfo();
+
   return (
     <div className="space-y-6">
       {/* Profile Header */}
@@ -37,10 +51,10 @@ export function Overview({ driver, onUpdate }: OverviewProps) {
           />
           <div>
             <h2 className="text-xl font-semibold">{driver.name}</h2>
-            <div className="flex flex-col gap-1">
-              <span>{metrics.totalRides} Rides</span>
+            <div className="flex items-center gap-2 text-neutral-400">
+              <span>{metrics.totalRides} Total Rides</span>
+              <span>•</span>
               <span>{metrics.hoursOnline} Hours Online</span>
-              <span>${metrics.totalEarnings} Earned</span>
             </div>
           </div>
         </div>
@@ -48,47 +62,64 @@ export function Overview({ driver, onUpdate }: OverviewProps) {
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Rides */}
+        <div className="bg-neutral-900 p-4 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-neutral-400">Total Rides</div>
+            <Car className="w-5 h-5 text-neutral-400" />
+          </div>
+          <div className="mt-2 text-2xl font-semibold">{metrics.totalRides}</div>
+        </div>
+
         {/* Hours Online */}
-        <div className="bg-neutral-800 rounded-lg p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="font-medium">Hours Online</span>
-            <Clock className="text-[#C69249]" />
+        <div className="bg-neutral-900 p-4 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-neutral-400">Hours Online</div>
+            <Clock className="w-5 h-5 text-neutral-400" />
           </div>
-          <div className="text-2xl font-bold">
-            {metrics.hoursOnline}
-          </div>
+          <div className="mt-2 text-2xl font-semibold">{metrics.hoursOnline}</div>
         </div>
 
         {/* Service Area */}
         <div className="bg-neutral-900 p-4 rounded-lg">
-          <div className="flex items-center gap-2 text-green-500 mb-2">
-            <MapPin className="w-5 h-5" />
-            <span className="font-medium">Service Area</span>
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-neutral-400">Service Area</div>
+            <MapPin className="w-5 h-5 text-neutral-400" />
           </div>
-          <div className="text-2xl font-bold">
-            {getServiceAreaName()}
-          </div>
+          <div className="mt-2 text-2xl font-semibold">{getServiceAreaName()}</div>
         </div>
 
-        {/* Total Rides */}
-        <div className="bg-neutral-800 rounded-lg p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="font-medium">Total Rides</span>
-            <Car className="text-[#C69249]" />
+        {/* Today's Rides */}
+        <div className="bg-neutral-900 p-4 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-neutral-400">Today's Rides</div>
+            <Car className="w-5 h-5 text-neutral-400" />
           </div>
-          <div className="text-2xl font-bold">
-            {metrics.totalRides}
-          </div>
+          <div className="mt-2 text-2xl font-semibold">{metrics.todayRides}</div>
         </div>
+      </div>
 
-        {/* Total Earnings */}
-        <div className="bg-neutral-800 rounded-lg p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="font-medium">Total Earnings</span>
-            <DollarSign className="text-[#C69249]" />
+      {/* Vehicle Information */}
+      <div className="bg-neutral-900 p-6 rounded-lg">
+        <h3 className="text-lg font-semibold mb-4">Vehicle Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <div className="text-sm text-neutral-400">Vehicle</div>
+            <div className="font-medium">
+              {vehicleInfo.make} {vehicleInfo.model} ({vehicleInfo.year})
+            </div>
           </div>
-          <div className="text-2xl font-bold">
-            ${metrics.totalEarnings}
+          <div>
+            <div className="text-sm text-neutral-400">Color</div>
+            <div className="font-medium">{vehicleInfo.color}</div>
+          </div>
+          <div>
+            <div className="text-sm text-neutral-400">License Plate</div>
+            <div className="font-medium">{vehicleInfo.licensePlate}</div>
+          </div>
+          <div>
+            <div className="text-sm text-neutral-400">Insurance</div>
+            <div className="font-medium">{vehicleInfo.insurance.provider || 'Not Set'}</div>
           </div>
         </div>
       </div>

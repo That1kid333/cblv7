@@ -4,6 +4,7 @@ import { collection, query, where, onSnapshot, addDoc, getDoc, doc } from 'fireb
 import { db } from '../lib/firebase';
 import { useAuth } from '../hooks/useAuth';
 import { Send, ArrowLeft } from 'lucide-react';
+import styled from 'styled-components';
 
 interface Message {
   id: string;
@@ -15,6 +16,169 @@ interface Message {
   participants: string[];
   rideId?: string;
 }
+
+const ChatContainer = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+`;
+
+const ChatTitle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  
+  .icon {
+    width: 40px;
+    height: 40px;
+    background: #F4A340;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    svg {
+      width: 24px;
+      height: 24px;
+      color: white;
+    }
+  }
+  
+  .text {
+    h1 {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: white;
+      margin: 0;
+    }
+    h2 {
+      font-size: 1rem;
+      color: #999;
+      margin: 0;
+    }
+  }
+`;
+
+const MessagesContainer = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const Message = styled.div<{ isUser?: boolean }>`
+  max-width: 80%;
+  align-self: ${props => props.isUser ? 'flex-end' : 'flex-start'};
+  
+  .header {
+    color: #F4A340;
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+  }
+  
+  .content {
+    background: ${props => props.isUser ? '#333' : '#222'};
+    padding: 12px 16px;
+    border-radius: 12px;
+    color: white;
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+  
+  .avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+`;
+
+const InputArea = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #222;
+  padding: 10px;
+  border-radius: 25px;
+  margin-top: auto;
+  
+  input {
+    flex: 1;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 0.95rem;
+    padding: 8px;
+    
+    &::placeholder {
+      color: #666;
+    }
+    
+    &:focus {
+      outline: none;
+    }
+  }
+  
+  button {
+    background: none;
+    border: none;
+    color: #666;
+    padding: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &:hover {
+      color: #F4A340;
+    }
+    
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+`;
+
+const BottomNav = styled.nav`
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 15px 0;
+  background: #111;
+  border-top: 1px solid #222;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  
+  a {
+    color: #666;
+    text-decoration: none;
+    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    
+    &.active {
+      color: #F4A340;
+    }
+    
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+`;
 
 export function Messages() {
   const { contactId } = useParams<{ contactId: string }>();
@@ -169,74 +333,46 @@ export function Messages() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="bg-neutral-900 p-4 flex items-center space-x-4">
-        <Link to="/rider/portal" className="text-[#C69249] hover:text-[#B58239]">
+    <ChatContainer>
+      <ChatTitle>
+        <div className="icon">
           <ArrowLeft className="w-6 h-6" />
-        </Link>
-        <h1 className="text-lg font-semibold">Messages</h1>
-      </div>
-
-      <div className="p-4">
-        <div className="max-w-3xl mx-auto">
-          <div className="bg-neutral-900 rounded-lg shadow-lg h-[calc(100vh-8rem)]">
-            {/* Messages Container */}
-            <div className="flex-1 p-4 overflow-y-auto">
-              <div className="flex items-center gap-2 mb-4">
-                <Link to="/rides" className="p-2 hover:bg-neutral-700 rounded-full">
-                  <ArrowLeft className="w-6 h-6" />
-                </Link>
-                <h2 className="text-xl font-semibold">{contactName || 'Customer'}</h2>
-              </div>
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${
-                    message.senderId === rider?.id ? 'justify-end' : 'justify-start'
-                  }`}
-                >
-                  <div
-                    className={`max-w-[70%] rounded-lg px-4 py-2 ${
-                      message.senderId === rider?.id
-                        ? 'bg-[#C69249] text-white'
-                        : 'bg-neutral-800 text-neutral-100'
-                    }`}
-                  >
-                    <p>{message.content}</p>
-                    <p className="text-xs opacity-70 mt-1">
-                      {new Date(message.timestamp).toLocaleTimeString()}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Message Input */}
-            <form
-              onSubmit={handleSendMessage}
-              className="h-20 border-t border-neutral-800 p-4 flex items-center gap-4"
-            >
-              <input
-                type="text"
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Type your message..."
-                className="flex-1 bg-neutral-800 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#C69249]"
-              />
-              <button
-                type="submit"
-                disabled={!newMessage.trim()}
-                className="bg-[#C69249] text-white p-2 rounded-lg hover:bg-[#B58239] disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Send className="w-6 h-6" />
-              </button>
-            </form>
-          </div>
         </div>
-      </div>
-    </div>
+        <div className="text">
+          <h1>{contactName || 'Customer'}</h1>
+          <h2>MESSAGE YOUR DRIVER</h2>
+        </div>
+      </ChatTitle>
+
+      <MessagesContainer>
+        {messages.map(message => (
+          <Message 
+            key={message.id} 
+            isUser={message.senderId === rider?.id}
+          >
+            <div className="header">{message.senderId === rider?.id ? 'You' : contactName}</div>
+            <div className="content">{message.content}</div>
+          </Message>
+        ))}
+        <div ref={messagesEndRef} />
+      </MessagesContainer>
+
+      <InputArea>
+        <button>
+          <IoAttach />
+        </button>
+        <input
+          type="text"
+          placeholder="Type a message"
+          value={newMessage}
+          onChange={e => setNewMessage(e.target.value)}
+          onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
+        />
+        <button>
+          <Send className="w-6 h-6" />
+        </button>
+      </InputArea>
+    </ChatContainer>
   );
 }
 

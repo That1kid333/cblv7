@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../hooks/useAuth';
 import { MessageCircle } from 'lucide-react';
@@ -42,6 +42,7 @@ export function MessagesTab() {
       if (!rider?.id) return;
 
       try {
+        setLoading(true);
         // First, get all rides where the user is the rider
         const ridesQuery = query(
           collection(db, 'rides'),
@@ -59,29 +60,36 @@ export function MessagesTab() {
         // For each ride, get the latest message
         const threads = await Promise.all(
           rides.map(async (ride) => {
-            const messagesQuery = query(
-              collection(db, 'messages'),
-              where('rideId', '==', ride.id),
-              orderBy('timestamp', 'desc'),
-              where('participants', 'array-contains', rider.id)
-            );
+            try {
+              const messagesQuery = query(
+                collection(db, 'messages'),
+                where('rideId', '==', ride.id),
+                where('participants', 'array-contains', rider.id),
+                orderBy('timestamp', 'desc'),
+                limit(1)
+              );
 
-            const messagesSnapshot = await getDocs(messagesQuery);
-            const latestMessage = messagesSnapshot.docs[0]?.data();
+              const messagesSnapshot = await getDocs(messagesQuery);
+              const latestMessage = messagesSnapshot.docs[0]?.data();
 
-            return {
-              id: ride.id,
-              driverId: ride.driverId,
-              driverName: ride.driver?.name || 'Unknown Driver',
-              driverPhoto: ride.driver?.photo,
-              lastMessage: latestMessage?.content || 'No messages yet',
-              timestamp: latestMessage?.timestamp || ride.timestamp,
-              rideId: ride.id
-            };
+              return {
+                id: ride.id,
+                driverId: ride.driverId,
+                driverName: ride.driver?.name || 'Unknown Driver',
+                driverPhoto: ride.driver?.photo || '/src/assets/default-avatar.png',
+                lastMessage: latestMessage?.content || 'No messages yet',
+                timestamp: latestMessage?.timestamp || ride.timestamp,
+                rideId: ride.id
+              };
+            } catch (error) {
+              console.error(`Error fetching messages for ride ${ride.id}:`, error);
+              return null;
+            }
           })
         );
 
-        setChatThreads(threads);
+        // Filter out any null threads from failed message fetches
+        setChatThreads(threads.filter((thread): thread is ChatThread => thread !== null));
       } catch (error) {
         console.error('Error fetching chat threads:', error);
       } finally {

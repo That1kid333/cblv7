@@ -59,17 +59,22 @@ export interface Driver {
   name: string;
   email: string;
   phone: string;
-  photo: string;
-  type: 'driver';
-  status: 'available' | 'busy' | 'offline';
-  isOnline: boolean;
-  serviceLocations: string[];
+  photo?: string;
+  driversLicense: {
+    number: string;
+    expirationDate: string;
+  };
   vehicle: {
     make: string;
     model: string;
     year: string;
     color: string;
     licensePlate: string;
+    registration?: {
+      number: string;
+      expirationDate: string;
+      documentUrl: string;
+    };
     insurance: {
       provider: string;
       policyNumber: string;
@@ -77,15 +82,20 @@ export interface Driver {
       documentUrl: string;
     };
   };
-  experience: string;
-  languages: string[];
-  totalRides: number;
   metrics: {
     hoursOnline: number;
     totalRides: number;
     todayRides: number;
     todayHours: number;
+    totalEarnings: number;
   };
+  status: 'active' | 'inactive' | 'pending';
+  currentLocation?: {
+    lat: number;
+    lng: number;
+  };
+  serviceLocations: string[];
+  type: 'driver';
   created_at: string;
   updated_at: string;
 }
